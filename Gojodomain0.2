@@ -1,1 +1,516 @@
+-- =========================================================================
+-- ⚡ ULTIMATE ROBLOX ADMIN SCRIPT - SERVER SIDE (FIXED & COMPLETED)
+-- =========================================================================
+-- Đặt đoạn mã này vào ServerScriptService (Script dạng Server)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Debris = game:GetService("Debris")
+local TweenService = game:GetService("TweenService")
+
+-- Admin Configuration
+local ADMIN_CONFIG = {
+    AdminIds = {
+        [123456789] = true, -- Thay thế bằng UserId của bạn
+    },
+    AdminNames = {
+        ["YourUsername"] = true, -- Thay thế bằng Tên tài khoản Roblox của bạn
+    }
+}
+
+-- Remote Events Folder
+local remoteEvents = ReplicatedStorage:FindFirstChild("AdminRemotes")
+if not remoteEvents then
+    remoteEvents = Instance.new("Folder")
+    remoteEvents.Name = "AdminRemotes"
+    remoteEvents.Parent = ReplicatedStorage
+end
+
+local function createRemote(name)
+    local remote = remoteEvents:FindFirstChild(name)
+    if not remote then
+        remote = Instance.new("RemoteEvent")
+        remote.Name = name
+        remote.Parent = remoteEvents
+    end
+    return remote
+end
+
+-- Tạo danh sách các Remote Events
+local remotes = {
+    "ToggleFly", "ToggleNoClip", "SetSpeed", "SetJumpPower",
+    "Teleport", "ResetCharacter", "Heal", "ToggleGodMode",
+    "ToggleInvisible", "ToggleKillAura", "SetAuraRange",
+    "TriggerCombat", "TriggerGlobalEvent", "TriggerShader",
+    "TriggerReality", "TriggerZAKO", "TriggerCreatorMode",
+    "SendAnnouncement", "TriggerUltimateEvent"
+}
+
+for _, remoteName in pairs(remotes) do
+    createRemote(remoteName)
+end
+
+-- ============ ADMIN AUTHENTICATION ============
+local function isAdmin(player)
+    return ADMIN_CONFIG.AdminIds[player.UserId] or ADMIN_CONFIG.AdminNames[player.Name]
+end
+
+-- ============ PLAYER DATA STORAGE ============
+local playerData = {}
+
+local function getPlayerData(player)
+    if not playerData[player] then
+        playerData[player] = {
+            flyEnabled = false,
+            noclipEnabled = false,
+            godMode = false,
+            invisible = false,
+            killAura = false,
+            auraRange = 20,
+            creatorMode = false,
+            finalCreator = false
+        }
+    end
+    return playerData[player]
+end
+
+-- ============ CHARACTER HANDLING ============
+local function getCharacter(player)
+    if player and player.Character then
+        return player.Character
+    end
+    return nil
+end
+
+local function getHumanoid(player)
+    local char = getCharacter(player)
+    if char then
+        return char:FindFirstChild("Humanoid")
+    end
+    return nil
+end
+
+local function getRootPart(player)
+    local char = getCharacter(player)
+    if char then
+        return char:FindFirstChild("HumanoidRootPart")
+    end
+    return nil
+end
+
+-- ============ ADMIN COMMANDS ============
+local AdminCommands = {}
+
+function AdminCommands.ToggleFly(player)
+    if not isAdmin(player) then return end
+    local data = getPlayerData(player)
+    data.flyEnabled = not data.flyEnabled
+    local char = getCharacter(player)
+    if char then
+        local humanoid = char:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = data.flyEnabled
+        end
+    end
+    return data.flyEnabled
+end
+
+function AdminCommands.ToggleNoClip(player)
+    if not isAdmin(player) then return end
+    local data = getPlayerData(player)
+    data.noclipEnabled = not data.noclipEnabled
+    return data.noclipEnabled
+end
+
+function AdminCommands.SetSpeed(player, speed)
+    if not isAdmin(player) then return end
+    local humanoid = getHumanoid(player)
+    if humanoid then
+        humanoid.WalkSpeed = speed
+        return true
+    end
+    return false
+end
+
+function AdminCommands.SetJumpPower(player, power)
+    if not isAdmin(player) then return end
+    local humanoid = getHumanoid(player)
+    if humanoid then
+        humanoid.JumpPower = power
+        return true
+    end
+    return false
+end
+
+function AdminCommands.Teleport(player, target)
+    if not isAdmin(player) then return end
+    local root = getRootPart(player)
+    local targetRoot = getRootPart(target)
+    if root and targetRoot then
+        root.CFrame = targetRoot.CFrame + Vector3.new(0, 3, 0)
+        return true
+    end
+    return false
+end
+
+function AdminCommands.ResetCharacter(player)
+    if not isAdmin(player) then return end
+    player:LoadCharacter()
+    return true
+end
+
+function AdminCommands.Heal(player)
+    if not isAdmin(player) then return end
+    local humanoid = getHumanoid(player)
+    if humanoid then
+        humanoid.Health = humanoid.MaxHealth
+        return true
+    end
+    return false
+end
+
+function AdminCommands.ToggleGodMode(player)
+    if not isAdmin(player) then return end
+    local data = getPlayerData(player)
+    data.godMode = not data.godMode
+    return data.godMode
+end
+
+function AdminCommands.ToggleInvisible(player)
+    if not isAdmin(player) then return end
+    local data = getPlayerData(player)
+    data.invisible = not data.invisible
+    local char = getCharacter(player)
+    if char then
+        for _, part in pairs(char:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Transparency = data.invisible and 1 or 0
+            end
+        end
+    end
+    return data.invisible
+end
+
+function AdminCommands.ToggleKillAura(player)
+    if not isAdmin(player) then return end
+    local data = getPlayerData(player)
+    data.killAura = not data.killAura
+    return data.killAura
+end
+
+-- ============ COMBAT SYSTEM ============
+local CombatSystem = {}
+
+function CombatSystem.TriggerCombat(player, combatType, target)
+    if not isAdmin(player) then return end
+    local root = getRootPart(player)
+    if not root then return end
+    
+    if combatType == "KillAura" then
+        local data = getPlayerData(player)
+        local range = data.auraRange or 20
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player then
+                local targetRoot = getRootPart(plr)
+                if targetRoot and (targetRoot.Position - root.Position).Magnitude <= range then
+                    local humanoid = getHumanoid(plr)
+                    if humanoid then humanoid.Health = 0 end
+                end
+            end
+        end
+    elseif combatType == "DivineLightning" then
+        local lightning = Instance.new("Part")
+        lightning.Size = Vector3.new(1, 50, 1)
+        lightning.Position = root.Position + Vector3.new(0, 25, 0)
+        lightning.Material = Enum.Material.Neon
+        lightning.Color = Color3.fromRGB(255, 255, 0)
+        lightning.Anchored = true
+        lightning.CanCollide = false
+        lightning.Parent = workspace
+        Debris:AddItem(lightning, 2)
+        
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player then
+                local targetRoot = getRootPart(plr)
+                if targetRoot and (targetRoot.Position - root.Position).Magnitude <= 30 then
+                    local humanoid = getHumanoid(plr)
+                    if humanoid then humanoid.Health = humanoid.Health - 50 end
+                end
+            end
+        end
+    elseif combatType == "MeteorStrike" then
+        local meteor = Instance.new("Part")
+        meteor.Size = Vector3.new(10, 10, 10)
+        meteor.Shape = Enum.PartType.Ball
+        meteor.Material = Enum.Material.Neon
+        meteor.Color = Color3.fromRGB(255, 100, 0)
+        meteor.Position = root.Position + Vector3.new(0, 100, 0)
+        meteor.Anchored = false
+        meteor.CanCollide = false
+        meteor.Parent = workspace
+        
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+        bodyVelocity.Velocity = Vector3.new(0, -200, 0)
+        bodyVelocity.Parent = meteor
+        
+        task.wait(1)
+        if meteor and meteor.Parent then meteor:Destroy() end
+        
+        local explosion = Instance.new("Explosion")
+        explosion.Position = root.Position + Vector3.new(0, 5, 0)
+        explosion.BlastRadius = 30
+        explosion.BlastPressure = 100000
+        explosion.Parent = workspace
+        
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player then
+                local targetRoot = getRootPart(plr)
+                if targetRoot and (targetRoot.Position - root.Position).Magnitude <= 30 then
+                    local humanoid = getHumanoid(plr)
+                    if humanoid then humanoid.Health = humanoid.Health - 80 end
+                end
+            end
+        end
+    elseif combatType == "SolarBeam" then
+        local beam = Instance.new("Part")
+        beam.Size = Vector3.new(5, 100, 5)
+        beam.Position = root.Position + Vector3.new(0, 50, 0)
+        beam.Material = Enum.Material.Neon
+        beam.Color = Color3.fromRGB(255, 255, 255)
+        beam.Anchored = true
+        beam.CanCollide = false
+        beam.Parent = workspace
+        Debris:AddItem(beam, 2)
+        
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player then
+                local targetRoot = getRootPart(plr)
+                if targetRoot then
+                    local distance = (Vector3.new(targetRoot.Position.X, root.Position.Y, targetRoot.Position.Z) - 
+                                    Vector3.new(root.Position.X, root.Position.Y, root.Position.Z)).Magnitude
+                    if distance <= 20 then
+                        local humanoid = getHumanoid(plr)
+                        if humanoid then humanoid.Health = humanoid.Health - 100 end
+                    end
+                end
+            end
+        end
+    end
+    
+    remoteEvents.TriggerCombat:FireAllClients(player, combatType, root.Position)
+end
+
+-- ============ GLOBAL EVENTS ============
+local GlobalEvents = {}
+
+function GlobalEvents.SendAnnouncement(message)
+    remoteEvents.SendAnnouncement:FireAllClients(message)
+end
+
+function GlobalEvents.TriggerEvent(player, eventType)
+    if not isAdmin(player) then return end
+    
+    if eventType == "MeteorStorm" then
+        task.spawn(function()
+            for i = 1, 20 do
+                task.wait(0.5)
+                local x = math.random(-200, 200)
+                local z = math.random(-200, 200)
+                local meteor = Instance.new("Part")
+                meteor.Size = Vector3.new(5, 5, 5)
+                meteor.Shape = Enum.PartType.Ball
+                meteor.Material = Enum.Material.Neon
+                meteor.Color = Color3.fromRGB(255, 100, 0)
+                meteor.Position = Vector3.new(x, 200, z)
+                meteor.Anchored = false
+                meteor.CanCollide = false
+                meteor.Parent = workspace
+                
+                local bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+                bodyVelocity.Velocity = Vector3.new(0, -150, 0)
+                bodyVelocity.Parent = meteor
+                
+                task.spawn(function()
+                    task.wait(1.5)
+                    local explosion = Instance.new("Explosion")
+                    explosion.Position = Vector3.new(x, 5, z)
+                    explosion.BlastRadius = 20
+                    explosion.BlastPressure = 50000
+                    explosion.Parent = workspace
+                    if meteor then meteor:Destroy() end
+                end)
+            end
+        end)
+    elseif eventType == "Thunderstorm" then
+        task.spawn(function()
+            for i = 1, 10 do
+                task.wait(0.3)
+                local x = math.random(-150, 150)
+                local z = math.random(-150, 150)
+                local lightning = Instance.new("Part")
+                lightning.Size = Vector3.new(2, 80, 2)
+                lightning.Position = Vector3.new(x, 40, z)
+                lightning.Material = Enum.Material.Neon
+                lightning.Color = Color3.fromRGB(255, 255, 255)
+                lightning.Anchored = true
+                lightning.CanCollide = false
+                lightning.Parent = workspace
+                Debris:AddItem(lightning, 0.5)
+            end
+        end)
+    elseif eventType == "Volcano" then
+        task.spawn(function()
+            for i = 1, 50 do
+                task.wait(0.1)
+                local x = math.random(-10, 10)
+                local z = math.random(-10, 10)
+                local lava = Instance.new("Part")
+                lava.Size = Vector3.new(3, 3, 3)
+                lava.Shape = Enum.PartType.Ball
+                lava.Material = Enum.Material.Neon
+                lava.Color = Color3.fromRGB(255, 50, 0)
+                lava.Position = Vector3.new(x, 5, z)
+                lava.Anchored = false
+                lava.CanCollide = false
+                lava.Parent = workspace
+                
+                local bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
+                bodyVelocity.Velocity = Vector3.new(math.random(-50, 50), math.random(50, 100), math.random(-50, 50))
+                bodyVelocity.Parent = lava
+                Debris:AddItem(lava, 3)
+            end
+        end)
+    elseif eventType == "RedSky" then
+        Lighting.Ambient = Color3.fromRGB(100, 0, 0)
+        Lighting.OutdoorAmbient = Color3.fromRGB(100, 0, 0)
+        Lighting.Brightness = 0.5
+        Lighting.FogColor = Color3.fromRGB(150, 0, 0)
+        Lighting.FogEnd = 500
+        remoteEvents.TriggerGlobalEvent:FireAllClients(player, "RedSky")
+        GlobalEvents.SendAnnouncement("AN ADMIN HAS ENTERED THE SERVER.")
+    elseif eventType == "Eclipse" then
+        Lighting.Ambient = Color3.fromRGB(20, 20, 20)
+        Lighting.OutdoorAmbient = Color3.fromRGB(20, 20, 20)
+        Lighting.Brightness = 0.2
+        remoteEvents.TriggerGlobalEvent:FireAllClients(player, "Eclipse")
+    elseif eventType == "BloodMoon" then
+        Lighting.Ambient = Color3.fromRGB(80, 0, 0)
+        Lighting.OutdoorAmbient = Color3.fromRGB(80, 0, 0)
+        Lighting.Brightness = 0.3
+        remoteEvents.TriggerGlobalEvent:FireAllClients(player, "BloodMoon")
+    elseif eventType == "GalaxySky" then
+        remoteEvents.TriggerGlobalEvent:FireAllClients(player, "GalaxySky")
+    elseif eventType == "Apocalypse" then
+        Lighting.Ambient = Color3.fromRGB(50, 0, 0)
+        Lighting.OutdoorAmbient = Color3.fromRGB(50, 0, 0)
+        Lighting.Brightness = 0.3
+        Lighting.FogColor = Color3.fromRGB(100, 0, 0)
+        Lighting.FogEnd = 200
+        remoteEvents.TriggerGlobalEvent:FireAllClients(player, "Apocalypse")
+        GlobalEvents.SendAnnouncement("GLOBAL APOCALYPSE ACTIVATED.")
+    elseif eventType == "DivineJudgment" then
+        remoteEvents.TriggerGlobalEvent:FireAllClients(player, "DivineJudgment")
+        GlobalEvents.SendAnnouncement("DIVINE JUDGMENT HAS BEEN CAST.")
+    end
+end
+
+-- ============ CREATOR MODE ============
+local CreatorMode = {}
+
+function CreatorMode.Activate(player, mode)
+    if not isAdmin(player) then return end
+    local data = getPlayerData(player)
+    local char = getCharacter(player)
+    if not char then return end
+    
+    if mode == "Creator" then
+        data.creatorMode = true
+        local aura = Instance.new("Part")
+        aura.Size = Vector3.new(20, 20, 20)
+        aura.Shape = Enum.PartType.Ball
+        aura.Material = Enum.Material.Neon
+        aura.Color = Color3.fromRGB(255, 200, 50)
+        aura.Transparency = 0.5
+        aura.Anchored = true
+        aura.CanCollide = false
+        aura.Parent = char
+        
+        local beam = Instance.new("Part")
+        beam.Size = Vector3.new(10, 200, 10)
+        beam.Material = Enum.Material.Neon
+        beam.Color = Color3.fromRGB(255, 200, 50)
+        beam.Transparency = 0.5
+        beam.Anchored = true
+        beam.CanCollide = false
+        if char:FindFirstChild("HumanoidRootPart") then
+            beam.Position = char.HumanoidRootPart.Position + Vector3.new(0, 100, 0)
+        end
+        beam.Parent = workspace
+        
+        Lighting.Ambient = Color3.fromRGB(20, 20, 30)
+        Lighting.OutdoorAmbient = Color3.fromRGB(20, 20, 30)
+        
+        GlobalEvents.SendAnnouncement("THE CREATOR HAS AWAKENED.")
+        remoteEvents.TriggerCreatorMode:FireAllClients(player, "Creator")
+        
+        Debris:AddItem(aura, 60)
+        Debris:AddItem(beam, 60)
+        
+    elseif mode == "FinalCreator" then
+        data.finalCreator = true
+        data.creatorMode = true
+        Lighting.Ambient = Color3.fromRGB(10, 10, 20)
+        Lighting.OutdoorAmbient = Color3.fromRGB(10, 10, 20)
+        Lighting.Brightness = 0.2
+        
+        local aura = Instance.new("Part")
+        aura.Size = Vector3.new(30, 30, 30)
+        aura.Shape = Enum.PartType.Ball
+        aura.Material = Enum.Material.Neon
+        aura.Color = Color3.fromRGB(255, 255, 255)
+        aura.Transparency = 0.3
+        aura.Anchored = true
+        aura.CanCollide = false
+        aura.Parent = char
+        
+        GlobalEvents.SendAnnouncement("THE FINAL CREATOR FORM HAS AWAKENED.")
+        remoteEvents.TriggerCreatorMode:FireAllClients(player, "FinalCreator")
+        Debris:AddItem(aura, 120)
+    end
+end
+
+-- ============ ZAKO SYSTEM (ĐÃ SỬA HOÀN CHỈNH) ============
+local ZAKOSystem = {}
+
+function ZAKOSystem.Activate(player, mode)
+    if not isAdmin(player) then return end
+    
+    if mode == "Dimension" then
+        task.spawn(function()
+            for i = 1, 30 do
+                task.wait(0.1)
+                local x = math.random(-100, 100)
+                local z = math.random(-100, 100)
+                local zakoPart = Instance.new("Part")
+                zakoPart.Size = Vector3.new(4, 4, 4)
+                zakoPart.Material = Enum.Material.Neon
+                zakoPart.Color = Color3.fromRGB(150, 0, 255)
+                zakoPart.Position = Vector3.new(x, 100, z)
+                zakoPart.Anchored = false
+                zakoPart.CanCollide = false
+                zakoPart.Parent = workspace
+                Debris:AddItem(zakoPart, 3)
+            end
+        end)
+        remoteEvents.TriggerZAKO:FireAllClients(player, "Dimension")
+    end
+end
+
+print(">>> [ADMIN SCRIPT] Server Side Initialized Successfully!")
 
