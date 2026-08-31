@@ -1,0 +1,550 @@
+--// ============================================================
+--// 🌈 ZAKOTONGHOPV2 (UPDATED WITH GREEDY GARDEN & FIX LAG)
+--// Mobile + PC | Drag | Hide | Reopen | Rainbow
+--// ============================================================
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local Terrain = workspace:FindFirstChildOfClass("Terrain")
+
+local LocalPlayer = Players.LocalPlayer
+
+--==============================================================
+-- CONFIG
+--==============================================================
+
+local HUB_NAME = "Zakotonghopv2"
+
+--==============================================================
+-- 🥚 STEAL AN EGG
+--==============================================================
+
+local StealAnEggScripts = {
+    {
+        Name = "StealAnEggs",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/WhiteX1208/Scripts/refs/heads/main/StealAnEggs.luau"))()]]
+    },
+    {
+        Name = "Zako ServerHop",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/tnttangiang2023-oss/SeverhopByzako/refs/heads/main/Zakohub"))()]]
+    },
+    {
+        Name = "NovaHub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/NovaHubRBLX/NovaHub/refs/heads/main/novahub.lua"))()]]
+    },
+    {
+        Name = "Luarmor Loader",
+        Code = [[loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/3fcb385d3c782d11837cb680ae2a3ea4.lua"))()]]
+    },
+    {
+        Name = "Fyy Community",
+        Code = [[loadstring(game:HttpGet("https://FyyCommunity.my.id"))()]]
+    },
+    {
+        Name = "Hoshi",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/Fluxyyy333/HoshiOnTop/main/loader.lua"))()]]
+    },
+    {
+        Name = "MiirandaHub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/miirandahub/loader/refs/heads/main/stealaegg"))()]]
+    },
+    {
+        Name = "LennonHub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/lennonxscripts/lennonhub/main/stealaegg.lua"))()]]
+    }
+}
+
+--==============================================================
+-- 🍎 BLOX FRUIT
+--==============================================================
+
+local BloxFruitScripts = {
+    {
+        Name = "Redz Hub",
+        Code = [[local Settings = {JoinTeam = "Pirates", Translator = true} loadstring(game:HttpGet("https://raw.githubusercontent.com/PlockScripts/newredz/refs/heads/main/Main.luau"))(Settings)]]
+    },
+    {
+        Name = "PhucShin",
+        Code = [[repeat wait() until game:IsLoaded() and game.Players.LocalPlayer loadstring(game:HttpGet("https://raw.githubusercontent.com/shinichi-dz/phucshinsayhi/refs/heads/main/Loader.lua"))()]]
+    },
+    {
+        Name = "Lemon Hub",
+        Key = "Key:Lemon-hub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/trieu1082/Lemon-hub/refs/heads/main/Lemon-hub-cute.lua"))()]]
+    },
+    {
+        Name = "GravityHub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-GravityHub/BloxFruit/refs/heads/main/Main.lua"))()]]
+    }
+}
+
+--==============================================================
+-- 🌿 GREEDY GARDEN
+--==============================================================
+
+local GreedyGardenScripts = {
+    {
+        Name = "Jnkie Script 1",
+        Code = [[loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/b6aee26db73616f7983715c7c092fe0f7540edca30713fa4e2f678eff6e8fbef/download"))()]]
+    },
+    {
+        Name = "VxezeHub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/Dex-Bear/Vxezehub/refs/heads/main/VxezeHubMain"))()]]
+    },
+    {
+        Name = "Luarmor Loader",
+        Code = [[loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/467778b7e06d29cb032367938bfa7210.lua"))()]]
+    },
+    {
+        Name = "Jnkie Script 2",
+        Code = [[loadstring(game:HttpGet("https://api.jnkie.com/api/v1/luascripts/public/2b7d97ed2525cef705b26f22d6964b87dd4b64a1bf533ac61d9edf6df14e8471/download"))()]]
+    },
+    {
+        Name = "Aris Hub",
+        Code = [[loadstring(game:HttpGet("https://raw.githubusercontent.com/ArisVy/Aris-Hub/refs/heads/main/Gready_garden.lua"))()]]
+    }
+}
+
+--==============================================================
+-- GUI CORE
+--==============================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = HUB_NAME
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+pcall(function()
+    ScreenGui.Parent = game:GetService("CoreGui")
+end)
+
+if not ScreenGui.Parent then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.fromOffset(310, 390)
+Main.Position = UDim2.new(0.5, -155, 0.5, -195)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Thickness = 2.5
+Stroke.Parent = Main
+
+-- Rainbow Border Effect
+task.spawn(function()
+    local hue = 0
+    while ScreenGui.Parent do
+        hue = (hue + 0.008) % 1
+        Stroke.Color = Color3.fromHSV(hue, 1, 1)
+        task.wait()
+    end
+end)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -50, 0, 38)
+Title.Position = UDim2.fromOffset(8, 3)
+Title.BackgroundTransparency = 1
+Title.Text = "🌈 @Zako👻 — Script tổng hợp"
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
+
+task.spawn(function()
+    local hue = 0
+    while Title.Parent do
+        hue = (hue + 0.008) % 1
+        Title.TextColor3 = Color3.fromHSV(hue, 1, 1)
+        task.wait()
+    end
+end)
+
+local HideButton = Instance.new("TextButton")
+HideButton.Size = UDim2.fromOffset(32, 30)
+HideButton.Position = UDim2.new(1, -38, 0, 7)
+HideButton.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+HideButton.Text = "—"
+HideButton.TextColor3 = Color3.new(1, 1, 1)
+HideButton.TextSize = 18
+HideButton.Font = Enum.Font.GothamBold
+HideButton.Parent = Main
+
+local HideCorner = Instance.new("UICorner")
+HideCorner.CornerRadius = UDim.new(0, 6)
+HideCorner.Parent = HideButton
+
+local Reopen = Instance.new("TextButton")
+Reopen.Name = "ReopenButton"
+Reopen.Size = UDim2.fromOffset(52, 52)
+Reopen.Position = UDim2.new(0, 15, 0.5, -26)
+Reopen.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+Reopen.Text = "👻"
+Reopen.TextSize = 25
+Reopen.Visible = false
+Reopen.Active = true
+Reopen.Parent = ScreenGui
+
+local ReopenCorner = Instance.new("UICorner")
+ReopenCorner.CornerRadius = UDim.new(1, 0)
+ReopenCorner.Parent = Reopen
+
+local ReopenStroke = Instance.new("UIStroke")
+ReopenStroke.Thickness = 2
+ReopenStroke.Parent = Reopen
+
+task.spawn(function()
+    local hue = 0
+    while ScreenGui.Parent do
+        hue = (hue + 0.01) % 1
+        ReopenStroke.Color = Color3.fromHSV(hue, 1, 1)
+        task.wait()
+    end
+end)
+
+-- Drag Function
+local function MakeDraggable(Object)
+    local dragging, dragStart, startPos
+    Object.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Object.Position
+        end
+    end)
+    Object.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+        local delta = input.Position - dragStart
+        Object.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end)
+end
+
+MakeDraggable(Main)
+MakeDraggable(Reopen)
+
+HideButton.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    Reopen.Visible = true
+end)
+
+Reopen.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    Reopen.Visible = false
+end)
+
+-- Tab Bar
+local TabBar = Instance.new("ScrollingFrame")
+TabBar.Size = UDim2.new(1, -16, 0, 40)
+TabBar.Position = UDim2.fromOffset(8, 45)
+TabBar.BackgroundTransparency = 1
+TabBar.CanvasSize = UDim2.new(2, 0, 0, 0)
+TabBar.ScrollBarThickness = 0
+TabBar.Parent = Main
+
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+TabLayout.Padding = UDim.new(0, 5)
+TabLayout.Parent = TabBar
+
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -16, 1, -92)
+Content.Position = UDim2.fromOffset(8, 88)
+Content.BackgroundTransparency = 1
+Content.BorderSizePixel = 0
+Content.ScrollBarThickness = 3
+Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Content.CanvasSize = UDim2.new()
+Content.Parent = Main
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Padding = UDim.new(0, 6)
+ContentLayout.Parent = Content
+
+local function ClearContent()
+    for _, obj in ipairs(Content:GetChildren()) do
+        if obj:IsA("GuiObject") then obj:Destroy() end
+    end
+end
+
+local function CopyCode(code)
+    if setclipboard then pcall(function() setclipboard(code) end)
+    elseif toclipboard then pcall(function() toclipboard(code) end) end
+end
+
+local function ExecuteCode(code)
+    pcall(function()
+        local fn = loadstring(code)
+        if fn then fn() end
+    end)
+end
+
+local function CreateScriptButton(data)
+    local Height = data.Key and 50 or 43
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -4, 0, Height)
+    Button.BackgroundColor3 = Color3.fromRGB(27, 27, 34)
+    Button.BorderSizePixel = 0
+    Button.Text = ""
+    Button.AutoButtonColor = false
+    Button.Parent = Content
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Button
+
+    local NameLabel = Instance.new("TextLabel")
+    NameLabel.Size = UDim2.new(1, -60, 0, 25)
+    NameLabel.Position = UDim2.fromOffset(12, data.Key and 2 or 9)
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Text = data.Name
+    NameLabel.TextColor3 = Color3.new(1, 1, 1)
+    NameLabel.TextSize = 14
+    NameLabel.Font = Enum.Font.GothamBold
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NameLabel.Parent = Button
+
+    if data.Key then
+        local KeyLabel = Instance.new("TextLabel")
+        KeyLabel.Size = UDim2.new(1, -60, 0, 17)
+        KeyLabel.Position = UDim2.fromOffset(12, 27)
+        KeyLabel.BackgroundTransparency = 1
+        KeyLabel.Text = data.Key
+        KeyLabel.TextColor3 = Color3.fromRGB(170, 170, 180)
+        KeyLabel.TextSize = 10
+        KeyLabel.Font = Enum.Font.Gotham
+        KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
+        KeyLabel.Parent = Button
+    end
+
+    local Copy = Instance.new("TextButton")
+    Copy.Size = UDim2.fromOffset(42, 30)
+    Copy.Position = UDim2.new(1, -47, 0.5, -15)
+    Copy.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    Copy.Text = "📋"
+    Copy.TextSize = 15
+    Copy.Parent = Button
+
+    local CopyCorner = Instance.new("UICorner")
+    CopyCorner.CornerRadius = UDim.new(0, 5)
+    CopyCorner.Parent = Copy
+
+    Button.MouseButton1Click:Connect(function() ExecuteCode(data.Code) end)
+    Copy.MouseButton1Click:Connect(function()
+        CopyCode(data.Code)
+        Copy.Text = "✓"
+        task.delay(1, function() if Copy.Parent then Copy.Text = "📋" end end)
+    end)
+end
+
+local function CreateTab(name)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.fromOffset(80, 34)
+    Button.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    Button.Text = name
+    Button.TextColor3 = Color3.new(1, 1, 1)
+    Button.TextSize = 10
+    Button.Font = Enum.Font.GothamBold
+    Button.Parent = TabBar
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Button
+    return Button
+end
+
+local EggTab = CreateTab("🥚 STEAL")
+local BloxTab = CreateTab("🍎 BLOX")
+local GardenTab = CreateTab("🌿 GARDEN")
+local FixTab = CreateTab("⚡ FIX LAG")
+local MakeTab = CreateTab("🛠 TÔI LÀM")
+
+-- Show Functions
+local function ShowSteal()
+    ClearContent()
+    for _, data in ipairs(StealAnEggScripts) do CreateScriptButton(data) end
+end
+
+local function ShowBlox()
+    ClearContent()
+    for _, data in ipairs(BloxFruitScripts) do CreateScriptButton(data) end
+end
+
+local function ShowGarden()
+    ClearContent()
+    for _, data in ipairs(GreedyGardenScripts) do CreateScriptButton(data) end
+end
+
+-- Fix Lag Implementation (Giảm lag, tăng FPS, xóa hiệu ứng toàn diện)
+local function ShowFixLag()
+    ClearContent()
+
+    local Info = Instance.new("TextLabel")
+    Info.Size = UDim2.new(1, -4, 0, 45)
+    Info.BackgroundTransparency = 1
+    Info.Text = "⚡ Tối ưu hóa FPS & Giảm Lag tối đa cho Mobile/PC"
+    Info.TextColor3 = Color3.fromRGB(0, 255, 120)
+    Info.TextSize = 12
+    Info.Font = Enum.Font.GothamBold
+    Info.TextWrapped = true
+    Info.Parent = Content
+
+    local FixBtn = Instance.new("TextButton")
+    FixBtn.Size = UDim2.new(1, -4, 0, 45)
+    FixBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+    FixBtn.Text = "🚀 KÍCH HOẠT TỐI ƯU (FIX LAG)"
+    FixBtn.TextColor3 = Color3.new(1, 1, 1)
+    FixBtn.TextSize = 12
+    FixBtn.Font = Enum.Font.GothamBold
+    FixBtn.Parent = Content
+
+    local FixCorner = Instance.new("UICorner")
+    FixCorner.CornerRadius = UDim.new(0, 6)
+    FixCorner.Parent = FixBtn
+
+    local Status = Instance.new("TextLabel")
+    Status.Size = UDim2.new(1, -4, 0, 35)
+    Status.BackgroundTransparency = 1
+    Status.Text = "Trạng thái: Chưa bật"
+    Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Status.TextSize = 11
+    Status.Font = Enum.Font.Gotham
+    Status.Parent = Content
+
+    FixBtn.MouseButton1Click:Connect(function()
+        pcall(function()
+            -- Xóa hiệu ứng ánh sáng nặng
+            for _, v in ipairs(Lighting:GetChildren()) do
+                if v:IsA("PostEffect") or v:IsA("Sky") or v:IsA("Atmosphere") or v:IsA("BloomEffect") or v:IsA("BlurEffect") then
+                    v:Destroy()
+                end
+            end
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+
+            -- Giảm chất lượng Render vật thể
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            workspace.CurrentCamera.FieldOfView = 70
+
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    obj.Material = Enum.Material.SmoothPlastic
+                    obj.Reflectance = 0
+                elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Fire") or obj:IsA("Smoke") or obj:IsA("Sparkles") then
+                    obj.Enabled = false
+                end
+            end
+            
+            if Terrain then
+                Terrain.WaterWaveSize = 0
+                Terrain.WaterWaveSpeed = 0
+                Terrain.WaterTransparency = 0
+                Terrain.WaterReflectance = 0
+            end
+
+            Status.Text = "✅ Đã tối ưu hóa, xóa hiệu ứng & tăng FPS thành công!"
+            Status.TextColor3 = Color3.fromRGB(0, 255, 120)
+        end)
+    end)
+end
+
+local function ShowZakoCopy()
+    ClearContent()
+    local Info = Instance.new("TextLabel")
+    Info.Size = UDim2.new(1, -4, 0, 35)
+    Info.BackgroundTransparency = 1
+    Info.Text = "👻 Zako Copy — nhập DisplayName"
+    Info.TextColor3 = Color3.new(1, 1, 1)
+    Info.TextSize = 12
+    Info.Font = Enum.Font.GothamBold
+    Info.Parent = Content
+
+    local Input = Instance.new("TextBox")
+    Input.Size = UDim2.new(1, -4, 0, 42)
+    Input.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    Input.PlaceholderText = "Nhập DisplayName..."
+    Input.PlaceholderColor3 = Color3.fromRGB(130, 130, 140)
+    Input.Text = ""
+    Input.TextColor3 = Color3.new(1, 1, 1)
+    Input.TextSize = 13
+    Input.Font = Enum.Font.Gotham
+    Input.ClearTextOnFocus = false
+    Input.Parent = Content
+
+    local InputCorner = Instance.new("UICorner")
+    InputCorner.CornerRadius = UDim.new(0, 6)
+    InputCorner.Parent = Input
+
+    local CopyAvatar = Instance.new("TextButton")
+    CopyAvatar.Size = UDim2.new(1, -4, 0, 43)
+    CopyAvatar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    CopyAvatar.Text = "👤 COPY AVATAR"
+    CopyAvatar.TextColor3 = Color3.new(1, 1, 1)
+    CopyAvatar.TextSize = 13
+    CopyAvatar.Font = Enum.Font.GothamBold
+    CopyAvatar.Parent = Content
+
+    local CopyCorner = Instance.new("UICorner")
+    CopyCorner.CornerRadius = UDim.new(0, 6)
+    CopyCorner.Parent = CopyAvatar
+
+    local Status = Instance.new("TextLabel")
+    Status.Size = UDim2.new(1, -4, 0, 38)
+    Status.BackgroundTransparency = 1
+    Status.Text = "Trạng thái: Chưa chọn người chơi"
+    Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+    Status.TextSize = 11
+    Status.Font = Enum.Font.Gotham
+    Status.Parent = Content
+
+    local function FindPlayer(displayName)
+        local search = string.lower(displayName)
+        for _, player in ipairs(Players:GetPlayers()) do
+            if string.lower(player.DisplayName) == search then return player end
+        end
+        return nil
+    end
+
+    CopyAvatar.MouseButton1Click:Connect(function()
+        local target = FindPlayer(Input.Text)
+        if not target then Status.Text = "❌ Không tìm thấy DisplayName." return end
+        local character = LocalPlayer.Character
+        if not character then Status.Text = "❌ Nhân vật chưa sẵn sàng." return end
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid then Status.Text = "❌ Không tìm thấy Humanoid." return end
+        
+        local success, description = pcall(function()
+            return Players:GetHumanoidDescriptionFromUserId(target.UserId)
+        end)
+        if not success or not description then Status.Text = "❌ Không lấy được avatar." return end
+        
+        local applied = pcall(function() humanoid:ApplyDescription(description) end)
+        if applied then Status.Text = "✅ Đã copy avatar của @" .. target.DisplayName
+        else Status.Text = "❌ Lỗi khi áp dụng avatar." end
+    end)
+end
+
+-- Tab Events
+EggTab.MouseButton1Click:Connect(ShowSteal)
+BloxTab.MouseButton1Click:Connect(ShowBlox)
+GardenTab.MouseButton1Click:Connect(ShowGarden)
+FixTab.MouseButton1Click:Connect(ShowFixLag)
+MakeTab.MouseButton1Click:Connect(ShowZakoCopy)
+
+-- Mặc định mở tab Steal
+ShowSteal()
